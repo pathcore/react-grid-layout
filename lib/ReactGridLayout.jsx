@@ -11,6 +11,7 @@ import {
   compact,
   compactType,
   fastRGLPropsEqual,
+  findEmptyCells,
   getAllCollisions,
   getLayoutItem,
   moveElement,
@@ -83,6 +84,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
   static defaultProps: DefaultProps = {
     autoSize: true,
     cols: 12,
+    rows: 12,
     className: "",
     style: {},
     draggableHandle: "",
@@ -508,6 +510,40 @@ export default class ReactGridLayout extends React.Component<Props, State> {
     );
   }
 
+  emptyCells(): ?ReactElement<any>[] {
+    const { layout } = this.state;
+    const { cols, rows, emptyComponent, width, margin, containerPadding, maxRows, rowHeight, isBounded, useCSSTransforms, transformScale } = this.props;
+
+    if (!cols || !rows || !emptyComponent) {
+      return null
+    }
+    const emptyGridItems = findEmptyCells(layout, cols, rows);
+
+    const emptyCells = emptyGridItems.map((item) => (
+    <GridItem
+      h={1}
+      w={1}
+      x={item.x}
+      y={item.y}
+      i={item.i}
+      className="react-grid-empty-cell"
+      containerWidth={width}
+      cols={cols}
+      margin={margin}
+      containerPadding={containerPadding || margin}
+      maxRows={maxRows}
+      rowHeight={rowHeight}
+      isDraggable={false}
+      isResizable={false}
+      isBounded={false}
+      useCSSTransforms={useCSSTransforms}
+      transformScale={transformScale}
+      >
+        {emptyComponent ? emptyComponent(item) : <div></div>}
+    </GridItem>))
+    return emptyCells
+  }
+
   /**
    * Given a grid item, set its style attributes & surround in a <Draggable>.
    * @param  {Element} child React element.
@@ -727,6 +763,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
       ...style
     };
 
+    const empties = this.emptyCells();
     return (
       <div
         ref={innerRef}
@@ -744,6 +781,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
           this.state.droppingDOMNode &&
           this.processGridItem(this.state.droppingDOMNode, true)}
         {this.placeholder()}
+        {empties}
       </div>
     );
   }
