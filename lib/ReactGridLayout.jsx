@@ -231,7 +231,7 @@ export default class ReactGridLayout extends React.Component<Props, State> {
    */
   containerHeight(): ?string {
     if (!this.props.autoSize) return;
-    const nbRow = bottom(this.state.layout);
+    const nbRow = Math.max(this.props.rows || 0 ,bottom(this.state.layout));
     const containerPaddingY = this.props.containerPadding
       ? this.props.containerPadding[1]
       : this.props.margin[1];
